@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,29 +24,25 @@ wheels/
 .venv/
 venv/
 ENV/
-env/
+
+# Secrets
+.env
+
+# Research data (large JSON files)
+.firecrawl/search-*.json
+!.firecrawl/wiki/
+
+# OS
+.DS_Store
+
+# Data
+*.csv
+!autorae/*.csv
 
 # IDE
-.vscode/
 .idea/
-*.swp
-*.swo
+.vscode/
 
-# Data and caches
-~/.cache/autorae/
+# Autorae
 results.tsv
 run.log
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
-# PyTorch
-*.pt
-*.pth
-*.ckpt
-
-# Model outputs
-output/
-outputs/
-*.safetensors

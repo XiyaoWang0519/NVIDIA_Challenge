@@ -23,7 +23,7 @@ echo "=== 4/7 Install Python dependencies ==="
 uv sync
 
 echo "=== 5/7 Download competition data ==="
-uv run python prepare.py
+uv run python prepare.py || true
 
 echo "=== 6/7 Download model weights (this takes ~30 min) ==="
 uv run python -c "

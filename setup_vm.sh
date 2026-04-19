@@ -17,7 +17,7 @@ if ! command -v uv &> /dev/null; then
 fi
 
 echo "=== 3/7 Verify GPU ==="
-python3 -c "import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_device_name(0)}'); assert torch.cuda.is_available(), 'No GPU found!'; mem_gb=torch.cuda.get_device_properties(0).total_mem/1024**3; print(f'VRAM: {mem_gb:.0f}GB'); assert mem_gb >= 70, f'Need 80GB, got {mem_gb:.0f}GB'"
+python3 -c "import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_device_name(0)}'); assert torch.cuda.is_available(), 'No GPU found!'; mem_gb=torch.cuda.get_device_properties(0).total_memory/1024**3; print(f'VRAM: {mem_gb:.0f}GB'); assert mem_gb >= 70, f'Need 80GB, got {mem_gb:.0f}GB'"
 
 echo "=== 4/7 Install Python dependencies ==="
 uv sync

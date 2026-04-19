@@ -1,0 +1,33 @@
+[project]
+name = "autorae"
+version = "0.1.0"
+description = "Autonomous research on Nemotron-3-Nano-30B LoRA fine-tuning for reasoning"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.2.0",
+    "transformers>=4.40.0",
+    "peft>=0.10.0",
+    "vllm>=0.4.0",
+    "datasets>=2.18.0",
+    "accelerate>=0.28.0",
+    "bitsandbytes>=0.41.0",
+    "scipy",
+    "tqdm",
+    "numpy",
+    "pandas",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

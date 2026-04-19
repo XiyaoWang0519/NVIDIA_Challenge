@@ -47,7 +47,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
-from peft import LoraConfig, get_peft_model, TaskType, PeftModel
+from peft import LoraConfig, get_peft_model, TaskType, PeftModel, prepare_model_for_kbit_training
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
@@ -81,7 +81,9 @@ from prepare import (
 LORA_RANK = 32  # Must be <= 32 per competition rules
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
-TARGET_MODULES = r".*\.(in_proj|out_proj|up_proj|down_proj)$"
+# Competition regex `.*\.(in_proj|out_proj|up_proj|down_proj)$` hits incompatible
+# Mamba layers. Use module names that actually work with this hybrid Mamba-MoE model.
+TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "gate"]
 
 # === Training ===
 DEVICE_BATCH_SIZE = 1
@@ -89,7 +91,7 @@ GRADIENT_ACCUMULATION_STEPS = 16
 LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 0.01
 NUM_EPOCHS = 1
-MAX_SEQ_LEN = 2048
+MAX_SEQ_LEN = 512
 WARMUP_RATIO = 0.1
 
 # === Advanced: Self-consistency ===
@@ -714,6 +716,7 @@ def build_model():
         device_map="auto",
         trust_remote_code=True,
     )
+    model = prepare_model_for_kbit_training(model)
     model.gradient_checkpointing_enable()
 
     lora_config = LoraConfig(

@@ -83,7 +83,7 @@ LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
 # Competition regex `.*\.(in_proj|out_proj|up_proj|down_proj)$` hits incompatible
 # Mamba layers. Use module names that actually work with this hybrid Mamba-MoE model.
-TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "gate"]
+TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj"]
 
 # === Training ===
 DEVICE_BATCH_SIZE = 1

@@ -6,19 +6,23 @@ Guide for running `autorae` experiments on Google Cloud Platform.
 
 ### Instance type
 
-| Component | Recommendation |
+Nemotron-3-Nano-30B is a **MoE model** (30B total params, ~3.6B active per token). In bf16, the weights alone are ~60GB. **You need a single A100 80GB** for LoRA fine-tuning.
+
+| Component | Requirement |
 |---|---|
-| GPU | **A100 80GB** (most cost-effective for 30B model + LoRA) |
-| Alternative | **A100 40GB** or **TPU v3-8** |
-| CPU | 32 vCPU (for data loading) |
+| GPU | **A100 80GB** (minimum — bf16 weights + LoRA training uses ~60GB VRAM) |
+| CPU | 16+ vCPU |
 | RAM | 128GB+ |
-| Disk | 200GB+ SSD (for model weights and data) |
+| Disk | 300GB+ SSD (model weights ~60GB + data + checkpoints) |
+
+> **Warning**: A100 40GB is NOT sufficient. bf16 model weights alone are ~60GB.
+> If you only have 40GB GPUs, you'd need QLoRA (4-bit quantization + LoRA) or 2x A100-40GB.
 
 ### Estimated cost
 
 - A100 80GB on-demand: ~$3.67/hr
-- A100 80GB preemptible: ~$1.11/hr (recommended for autoresearch — experiments are restartable)
-- Storage: ~$0.10/GB/month
+- A100 80GB preemptible/spot: ~$1.11/hr (recommended — experiments are restartable)
+- At ~12 experiments/hr, that's ~$0.09 per experiment on preemptible
 
 ## Setup steps
 

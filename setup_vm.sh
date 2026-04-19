@@ -26,9 +26,18 @@ echo "=== 5/7 Download competition data ==="
 uv run python prepare.py || true
 
 echo "=== 6/7 Download model weights (this takes ~30 min) ==="
-# Use huggingface-cli to download without loading (avoids mamba_ssm import issue)
-MODEL_ID="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
-uv run huggingface-cli download "$MODEL_ID" --token "${HF_TOKEN:-}" --local-dir-use-symlinks True 2>&1 | tail -5
+uv run python -c "
+import os
+from huggingface_hub import snapshot_download
+token = os.environ.get('HF_TOKEN')
+model = 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16'
+print(f'Downloading {model}...')
+path = snapshot_download(model, token=token)
+print(f'Downloaded to {path}')
+import subprocess
+size = subprocess.check_output(['du', '-sh', path]).decode().split()[0]
+print(f'Total size: {size}')
+"
 echo "Model download complete."
 
 echo ""

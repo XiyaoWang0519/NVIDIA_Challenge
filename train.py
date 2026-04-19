@@ -692,20 +692,30 @@ class ProcessRewardSignal:
 # ---------------------------------------------------------------------------
 
 def build_model():
-    """Build and load the base model (bf16) + LoRA. Requires ~60GB VRAM (A100 80GB)."""
+    """Build and load the base model (4-bit QLoRA) + LoRA. Fits in A100 80GB."""
+    from transformers import BitsAndBytesConfig
+
     print(f"Loading base model: {BASE_MODEL}")
-    
+
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_use_double_quant=True,
+    )
+
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        torch_dtype=torch.bfloat16,
+        quantization_config=bnb_config,
         device_map="auto",
         trust_remote_code=True,
     )
-    
+    model.gradient_checkpointing_enable()
+
     lora_config = LoraConfig(
         r=LORA_RANK,
         lora_alpha=LORA_ALPHA,
@@ -714,10 +724,10 @@ def build_model():
         bias="none",
         task_type=TaskType.CAUSAL_LM,
     )
-    
+
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
-    
+
     return model, tokenizer
 
 
@@ -1025,16 +1035,23 @@ def evaluate():
     print("Evaluation")
     print("=" * 60)
     
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
     from peft import PeftModel
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_use_double_quant=True,
+    )
+
     # Load model
     print("Loading model and adapter...")
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        torch_dtype=torch.bfloat16,
+        quantization_config=bnb_config,
         device_map="auto",
         trust_remote_code=True,
     )

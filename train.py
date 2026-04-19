@@ -134,7 +134,8 @@ MAX_SAMPLES = None  # None = use all
 MAX_SYNTHETIC_SAMPLES = 5000  # Cap synthetic samples for training
 
 # === Model ===
-BASE_MODEL = MODEL_NAME
+# prepare.py has the old HF name; the repo was renamed
+BASE_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
 torch.set_float32_matmul_precision("high")
 
 # ---------------------------------------------------------------------------
@@ -1033,14 +1034,14 @@ def evaluate():
     # Load model
     print("Loading model and adapter...")
     base_model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
+        BASE_MODEL,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True,
         attn_implementation="flash_attention_2",
     )
-    
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
+
+    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     
     output_dir = os.path.expanduser("~/.cache/autorae/output")
     if os.path.exists(output_dir):

@@ -694,24 +694,21 @@ class ProcessRewardSignal:
 # ---------------------------------------------------------------------------
 
 def build_model():
-    """Build and load the base model (8-bit) + LoRA. Fits in A100 80GB."""
-    from transformers import BitsAndBytesConfig
-
+    """Build and load the base model (bf16) + LoRA with CPU offloading."""
     print(f"Loading base model: {BASE_MODEL}")
 
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-
+    # Leave 20GB for training activations/grads, rest goes to model
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        quantization_config=bnb_config,
+        torch_dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True,
+        max_memory={0: "60GiB", "cpu": "80GiB"},
     )
-    model = prepare_model_for_kbit_training(model)
     model.gradient_checkpointing_enable()
 
     lora_config = LoraConfig(
@@ -1038,15 +1035,14 @@ def evaluate():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-
     # Load model
     print("Loading model and adapter...")
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        quantization_config=bnb_config,
+        torch_dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True,
+        max_memory={0: "60GiB", "cpu": "80GiB"},
     )
 
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)

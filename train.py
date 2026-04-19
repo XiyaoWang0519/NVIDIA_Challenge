@@ -694,7 +694,7 @@ class ProcessRewardSignal:
 # ---------------------------------------------------------------------------
 
 def build_model():
-    """Build and load the base model (4-bit QLoRA) + LoRA. Fits in A100 80GB."""
+    """Build and load the base model (8-bit) + LoRA. Fits in A100 80GB."""
     from transformers import BitsAndBytesConfig
 
     print(f"Loading base model: {BASE_MODEL}")
@@ -703,12 +703,7 @@ def build_model():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16,
-        bnb_4bit_use_double_quant=True,
-    )
+    bnb_config = BitsAndBytesConfig(load_in_8bit=True)
 
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
@@ -1043,12 +1038,7 @@ def evaluate():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16,
-        bnb_4bit_use_double_quant=True,
-    )
+    bnb_config = BitsAndBytesConfig(load_in_8bit=True)
 
     # Load model
     print("Loading model and adapter...")

@@ -26,17 +26,17 @@ echo "=== 5/7 Download competition data ==="
 uv run python prepare.py || true
 
 echo "=== 6/7 Download model weights (this takes ~30 min) ==="
+# Note: prepare.py has the old model name. The correct HuggingFace ID is NVIDIA-Nemotron-3-Nano-30B-A3B-BF16.
+# We download by the correct name, and prepare.py's train.py will find it via HuggingFace cache.
+MODEL_ID="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
 uv run python -c "
 import os
-from prepare import MODEL_NAME
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 token = os.environ.get('HF_TOKEN')
-if not token:
-    print('WARNING: HF_TOKEN not set. Model download may fail for gated models.')
-print(f'Downloading {MODEL_NAME}...')
-AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True, token=token)
-AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, trust_remote_code=True, token=token)
+print(f'Downloading $MODEL_ID...')
+AutoTokenizer.from_pretrained('$MODEL_ID', trust_remote_code=True, token=token)
+AutoModelForCausalLM.from_pretrained('$MODEL_ID', torch_dtype=torch.bfloat16, trust_remote_code=True, token=token)
 print('Done!')
 "
 

@@ -119,7 +119,7 @@ USE_PROCESS_REWARD = False  # Train with per-step rewards
 PROCESS_REWARD_WEIGHT = 0.1
 
 # === Advanced: External datasets ===
-USE_EXTERNAL_DATA = True  # Use OpenMathReasoning, Nemotron post-training data
+USE_EXTERNAL_DATA = False  # External datasets fill disk / don't exist on Hub
 EXTERNAL_DATA_WEIGHT = 0.5  # Mix weight for external data
 
 # === Advanced: Prompt format ===

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Autonomous research on Nemotron-3-Nano-30B LoRA fine-tuning for reasoning"
 requires-python = ">=3.10"
 dependencies = [
-    "torch",
+    "torch>=2.2.0",
     "transformers>=4.40.0",
     "peft>=0.10.0",
     "vllm>=0.4.0",
@@ -13,10 +13,17 @@ dependencies = [
     "bitsandbytes>=0.41.0",
     "scipy",
     "tqdm",
+    "numpy",
+    "pandas",
+    "requests",
 ]
 
 [project.optional-dependencies]
-dev = []
+dev = [
+    "pytest",
+    "black",
+    "ruff",
+]
 
 [build-system]
 requires = ["hatchling"]

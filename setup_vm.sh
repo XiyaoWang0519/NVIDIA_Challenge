@@ -26,19 +26,10 @@ echo "=== 5/7 Download competition data ==="
 uv run python prepare.py || true
 
 echo "=== 6/7 Download model weights (this takes ~30 min) ==="
-# Note: prepare.py has the old model name. The correct HuggingFace ID is NVIDIA-Nemotron-3-Nano-30B-A3B-BF16.
-# We download by the correct name, and prepare.py's train.py will find it via HuggingFace cache.
+# Use huggingface-cli to download without loading (avoids mamba_ssm import issue)
 MODEL_ID="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
-uv run python -c "
-import os
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-token = os.environ.get('HF_TOKEN')
-print(f'Downloading $MODEL_ID...')
-AutoTokenizer.from_pretrained('$MODEL_ID', trust_remote_code=True, token=token)
-AutoModelForCausalLM.from_pretrained('$MODEL_ID', torch_dtype=torch.bfloat16, trust_remote_code=True, token=token)
-print('Done!')
-"
+uv run huggingface-cli download "$MODEL_ID" --token "${HF_TOKEN:-}" --local-dir-use-symlinks True 2>&1 | tail -5
+echo "Model download complete."
 
 echo ""
 echo "========================================="

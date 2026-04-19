@@ -15,8 +15,7 @@ Nemotron-3-Nano-30B is a **MoE model** (30B total params, ~3.6B active per token
 | RAM | 128GB+ |
 | Disk | 300GB+ SSD (model weights ~60GB + data + checkpoints) |
 
-> **Warning**: A100 40GB is NOT sufficient. bf16 model weights alone are ~60GB.
-> If you only have 40GB GPUs, you'd need QLoRA (4-bit quantization + LoRA) or 2x A100-40GB.
+> **Warning**: A100 40GB is NOT sufficient for bf16 training. bf16 weights alone are ~60GB.
 
 ### Estimated cost
 

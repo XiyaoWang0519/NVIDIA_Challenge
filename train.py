@@ -15,7 +15,6 @@ Hardware requirement:
   Nemotron-3-Nano-30B is a MoE model (30B total, ~3.6B active params).
   bf16 weights are ~60GB. LoRA fine-tuning needs ~60GB VRAM.
   => Single A100 80GB is sufficient.
-  => If only A100 40GB available, enable QLoRA (USE_QLORA = True below).
 
 Usage: uv run train.py
 
@@ -83,11 +82,6 @@ LORA_RANK = 32  # Must be <= 32 per competition rules
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
 TARGET_MODULES = r".*\.(in_proj|out_proj|up_proj|down_proj)$"
-
-# === QLoRA (for 40GB GPUs — use 4-bit quantization to fit) ===
-USE_QLORA = False  # Set True if on A100 40GB or smaller GPU
-QLORA_BITS = 4
-QLORA_GROUP_SIZE = 128
 
 # === Training ===
 DEVICE_BATCH_SIZE = 1
@@ -697,43 +691,20 @@ class ProcessRewardSignal:
 # ---------------------------------------------------------------------------
 
 def build_model():
-    """Build and load the base model + LoRA (or QLoRA if USE_QLORA=True)."""
+    """Build and load the base model (bf16) + LoRA. Requires ~60GB VRAM (A100 80GB)."""
     print(f"Loading base model: {BASE_MODEL}")
-    print(f"  QLoRA: {USE_QLORA}")
     
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
-    if USE_QLORA:
-        # 4-bit quantization: fits ~30B model in ~15GB VRAM (vs ~60GB for bf16)
-        from transformers import BitsAndBytesConfig
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_storage=torch.bfloat16,
-        )
-        model = AutoModelForCausalLM.from_pretrained(
-            BASE_MODEL,
-            quantization_config=bnb_config,
-            device_map="auto",
-            trust_remote_code=True,
-            attn_implementation="flash_attention_2",
-        )
-        # Prepare model for k-bit training
-        from peft import prepare_model_for_kbit_training
-        model = prepare_model_for_kbit_training(model)
-    else:
-        # Full bf16: needs ~60GB VRAM (A100 80GB recommended)
-        model = AutoModelForCausalLM.from_pretrained(
-            BASE_MODEL,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            trust_remote_code=True,
-            attn_implementation="flash_attention_2",
-        )
+    model = AutoModelForCausalLM.from_pretrained(
+        BASE_MODEL,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+        trust_remote_code=True,
+        attn_implementation="flash_attention_2",
+    )
     
     lora_config = LoraConfig(
         r=LORA_RANK,

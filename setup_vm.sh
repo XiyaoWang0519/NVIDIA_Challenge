@@ -27,12 +27,16 @@ uv run python prepare.py
 
 echo "=== 6/7 Download model weights (this takes ~30 min) ==="
 uv run python -c "
+import os
 from prepare import MODEL_NAME
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+token = os.environ.get('HF_TOKEN')
+if not token:
+    print('WARNING: HF_TOKEN not set. Model download may fail for gated models.')
 print(f'Downloading {MODEL_NAME}...')
-AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, trust_remote_code=True)
+AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True, token=token)
+AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, trust_remote_code=True, token=token)
 print('Done!')
 "
 
